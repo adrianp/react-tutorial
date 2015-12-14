@@ -1,9 +1,11 @@
 const contentDOM = document.getElementById('content');
 
-const Comment = React.createClass({
-    // don't use arrow functions if you plan to use this:
-    // https://github.com/facebook/react/issues/2927
-    render: function renderComment() {
+class Comment extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
         return (
             <div className="comment">
                 <h2 className="commentAuthor">
@@ -15,10 +17,14 @@ const Comment = React.createClass({
             </div>
         );
     }
-});
+}
 
-const CommentList = React.createClass({
-    render: function renderCommentList() {
+class CommentList extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
         const commentNodes = this.props.data.map((comment) => {
             return (
                 <Comment author={comment.author} key={comment.id}>
@@ -32,26 +38,30 @@ const CommentList = React.createClass({
             </div>
         );
     }
-});
+}
 
-const CommentForm = React.createClass({
-    getInitialState: function getInitialFormState() {
-        return {
+class CommentForm extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
             'author': '',
             'text': ''
         };
-    },
-    handleAuthorChange: function handleAuthorChange(e) {
+    }
+
+    handleAuthorChange(e) {
         this.setState({
             'author': e.target.value
         });
-    },
-    handleTextChange: function handleTextChange(e) {
+    }
+
+    handleTextChange(e) {
         this.setState({
             'text': e.target.value
         });
-    },
-    handleSubmit: function handleSubmit(e) {
+    }
+
+    handleSubmit(e) {
         e.preventDefault(); // prevent navigation
         const [author, text] = [
             this.state.author.trim(),
@@ -66,29 +76,38 @@ const CommentForm = React.createClass({
                 'text': ''
             });
         }
-    },
-    render: function renderCommentForm() {
+    }
+
+    render() {
         return (
-            <form className="commentForm" onSubmit={this.handleSubmit}>
+            <form className="commentForm"
+                  onSubmit={this.handleSubmit.bind(this)}>
                 <input
                     type="text"
                     placeholder="Your name"
                     value={this.state.author}
-                    onChange={this.handleAuthorChange}
+                    onChange={this.handleAuthorChange.bind(this)}
                 />
                 <textarea
                     placeholder="Your comment"
                     value={this.state.text}
-                    onChange={this.handleTextChange}
+                    onChange={this.handleTextChange.bind(this)}
                 />
                 <input type="submit" placeholder="Post comment" />
             </form>
         );
     }
-});
+}
 
-const CommentBox = React.createClass({
-    retrieveComments: function retrieveComments() {
+class CommentBox extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            data: []
+        };
+    }
+
+    retrieveComments() {
         window.fetch(this.props.url, {
             'headers': {
                 'content-type': 'application/json'
@@ -97,19 +116,17 @@ const CommentBox = React.createClass({
         .then((rawData) => rawData.json())
         .then((data) => this.setState({data}))
         .catch(console.log.bind(console));
-    },
-    getInitialState: function getInitialCommentBoxState() {
-        return {
-            data: []
-        };
-    },
-    componentDidMount: function commentBoxDidMount() {
+    }
+
+    componentDidMount() {
         this.retrieveComments();
         if (this.props.poll) {
-            window.setInterval(this.retrieveComments, this.props.poll);
+            window.setInterval(this.retrieveComments.bind(this),
+                this.props.poll);
         }
-    },
-    handleCommentSubmit: function handleCommentSubmit(comment) {
+    }
+
+    handleCommentSubmit(comment) {
         const oldComments = this.state.data;
         comment.id = Date.now();
         const newComments = oldComments.concat([comment]);
@@ -131,16 +148,18 @@ const CommentBox = React.createClass({
             });
             console.log(err);
         });
-    },
-    render: function renderCommentBox() {
+    }
+
+    render() {
         return (
             <div className="commentBox">
                 <h1>Comments</h1>
                 <CommentList data={this.state.data} />
-                <CommentForm onCommentSubmit={this.handleCommentSubmit} />
+                <CommentForm
+                    onCommentSubmit={this.handleCommentSubmit.bind(this)} />
             </div>
         );
     }
-});
+}
 
 ReactDOM.render(<CommentBox url='api/comments' poll={3000} />, contentDOM);
