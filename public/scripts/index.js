@@ -48,11 +48,52 @@ const CommentList = React.createClass({
 });
 
 const CommentForm = React.createClass({
+    getInitialState: function getInitialFormState() {
+        return {
+            'author': '',
+            'text': ''
+        };
+    },
+    handleAuthorChange: function handleAuthorChange(e) {
+        this.setState({
+            'author': e.target.value
+        });
+    },
+    handleTextChange: function handleTextChange(e) {
+        this.setState({
+            'text': e.target.value
+        });
+    },
+    handleSubmit: function handleSubmit(e) {
+        e.preventDefault(); // prevent navigation
+        const [author, text] = [
+            this.state.author.trim(),
+            this.state.text.trim()
+        ];
+        if (text && author) {
+            this.props.onCommentSubmit({author, text});
+            this.setState({
+                'author': '',
+                'text': ''
+            });
+        }
+    },
     render: function renderCommentForm() {
         return (
-            <div className="commentForm">
-                I'm a CommentForm
-            </div>
+            <form className="commentForm" onSubmit={this.handleSubmit}>
+                <input
+                    type="text"
+                    placeholder="Your name"
+                    value={this.state.author}
+                    onChange={this.handleAuthorChange}
+                />
+                <textarea
+                    placeholder="Your comment"
+                    value={this.state.text}
+                    onChange={this.handleTextChange}
+                />
+                <input type="submit" placeholder="Post comment" />
+            </form>
         );
     }
 });
@@ -79,15 +120,27 @@ const CommentBox = React.createClass({
             window.setInterval(this.retrieveComments, this.props.poll);
         }
     },
+    handleCommentSubmit: function handleCommentSubmit(comment) {
+        window.fetch(this.props.url, {
+            'method': 'post',
+            'headers': {
+                'content-type': 'application/json'
+            },
+            'body': JSON.stringify(comment)
+        })
+        .then((rawData) => rawData.json())
+        .then((data) => this.setState({data}))
+        .catch(console.log.bind(console));
+    },
     render: function renderCommentBox() {
         return (
             <div className="commentBox">
                 <h1>Comments</h1>
                 <CommentList data={this.state.data} />
-                <CommentForm />
+                <CommentForm onCommentSubmit={this.handleCommentSubmit} />
             </div>
         );
     }
 });
 
-ReactDOM.render(<CommentBox url='api/comments' poll={2000} />, contentDOM);
+ReactDOM.render(<CommentBox url='api/comments' poll={3000} />, contentDOM);
