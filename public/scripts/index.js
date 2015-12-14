@@ -58,16 +58,36 @@ const CommentForm = React.createClass({
 });
 
 const CommentBox = React.createClass({
+    retrieveComments: function retrieveComments() {
+        window.fetch(this.props.url, {
+            'headers': {
+                'content-type': 'application/json'
+            }
+        })
+        .then((rawData) => rawData.json())
+        .then((data) => this.setState({data}))
+        .catch(console.log.bind(console));
+    },
+    getInitialState: function getInitialCommentBoxState() {
+        return {
+            data: []
+        };
+    },
+    componentDidMount: function commentBoxDidMount() {
+        this.retrieveComments();
+        if (this.props.poll) {
+            window.setInterval(this.retrieveComments, this.props.poll);
+        }
+    },
     render: function renderCommentBox() {
         return (
             <div className="commentBox">
                 <h1>Comments</h1>
-                {/* passing an array of data received via CommentBox */}
-                <CommentList data={this.props.data} />
+                <CommentList data={this.state.data} />
                 <CommentForm />
             </div>
         );
     }
 });
 
-ReactDOM.render(<CommentBox data={dummyData} />, contentDOM);
+ReactDOM.render(<CommentBox url='api/comments' poll={2000} />, contentDOM);
