@@ -1,16 +1,3 @@
-class CommentModel {
-    constructor(id, author, text) {
-        this.id = id;
-        this.author = author;
-        this.text = text;
-    }
-}
-
-const dummyData = [
-    new CommentModel(0, 'Adrian-Tudor Panescu', 'Hello World!'),
-    new CommentModel(1, 'John Doe', 'Heh.')
-];
-
 const contentDOM = document.getElementById('content');
 
 const Comment = React.createClass({
@@ -72,6 +59,8 @@ const CommentForm = React.createClass({
         ];
         if (text && author) {
             this.props.onCommentSubmit({author, text});
+            // after submit we need to clean up the form so we can add a new
+            // comment
             this.setState({
                 'author': '',
                 'text': ''
