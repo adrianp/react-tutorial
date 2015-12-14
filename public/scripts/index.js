@@ -121,6 +121,12 @@ const CommentBox = React.createClass({
         }
     },
     handleCommentSubmit: function handleCommentSubmit(comment) {
+        const oldComments = this.state.data;
+        comment.id = Date.now();
+        const newComments = oldComments.concat([comment]);
+        this.setState({
+            'data': newComments
+        });
         window.fetch(this.props.url, {
             'method': 'post',
             'headers': {
@@ -130,7 +136,12 @@ const CommentBox = React.createClass({
         })
         .then((rawData) => rawData.json())
         .then((data) => this.setState({data}))
-        .catch(console.log.bind(console));
+        .catch((err) => {
+            this.setState({
+                'data': oldComments
+            });
+            console.log(err);
+        });
     },
     render: function renderCommentBox() {
         return (
